@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<con:soapui-project id="7b21c2bd-bc15-4676-9915-aa8a7311d749" activeEnvironment="Default" name="Database" resourceRoot="" soapui-version="5.5.0" abortOnError="false" runType="SEQUENTIAL" xmlns:con="http://eviware.com/soapui/config"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.actions.iface.tools.support.SecurityTestRunnerAction@values-local"><![CDATA[<xml-fragment xmlns:con="http://eviware.com/soapui/config">
+  <con:entry key="Report Format(s)" value=""/>
+  <con:entry key="Host:Port" value=""/>
+  <con:entry key="Export JUnit Results" value="false"/>
+  <con:entry key="Export All" value="false"/>
+  <con:entry key="Save After" value="false"/>
+  <con:entry key="Add Settings" value="false"/>
+  <con:entry key="WSS Password Type" value=""/>
+  <con:entry key="TestSuite" value="&lt;all>"/>
+  <con:entry key="Endpoint" value=""/>
+  <con:entry key="Select Report Type" value=""/>
+  <con:entry key="System Properties" value=""/>
+  <con:entry key="Password" value=""/>
+  <con:entry key="Print Report" value="false"/>
+  <con:entry key="Open Report" value="false"/>
+  <con:entry key="SecurityTest" value="&lt;all>"/>
+  <con:entry key="Global Properties" value=""/>
+  <con:entry key="Project Properties" value=""/>
+  <con:entry key="SecurityTestRunner Path" value=""/>
+  <con:entry key="Project Password" value=""/>
+  <con:entry key="TestCase" value="&lt;all>"/>
+  <con:entry key="Username" value=""/>
+  <con:entry key="user-settings.xml Password" value=""/>
+  <con:entry key="Environment" value="Default"/>
+  <con:entry key="Coverage Report" value="false"/>
+  <con:entry key="Enable UI" value="false"/>
+  <con:entry key="Root Folder" value=""/>
+  <con:entry key="Ignore Errors" value="false"/>
+  <con:entry key="Domain" value=""/>
+  <con:entry key="Tool Args" value=""/>
+  <con:entry key="Save Project" value="false"/>
+</xml-fragment>]]></con:setting></con:settings><con:testSuite id="41570b28-03c2-4741-87a3-8fdf6df79c7e" name="DataBase"><con:settings/><con:runType>SEQUENTIAL</con:runType><con:testCase id="9ad2e853-c5e6-42ce-b43b-7f4c18ef9b3a" failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="Database" searchProperties="true"><con:settings/><con:testStep type="jdbc" name="JDBC Request" id="003398aa-298b-40c4-a5d6-19304769c157"><con:settings/><con:config xsi:type="con:JdbcRequestTestStep" convertColumnNamesToUpperCase="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:driver>com.mysql.jdbc.Driver</con:driver><con:connectionString>jdbc:mysql://localhost:3306/Login?user=root&amp;password=root</con:connectionString><con:query>select * from CustomerID</con:query><con:properties/></con:config></con:testStep><con:testStep type="transfer" name="Property Transfer" id="e97e1036-942e-43d6-9c6d-2b5160b9ee16"><con:settings/><con:config xsi:type="con:PropertyTransfersStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:transfers setNullOnMissingSource="true" transferTextContent="true" failOnError="true" ignoreEmpty="false" transferToAll="false" entitize="false" transferChildNodes="false"><con:name>UserName</con:name><con:sourceType>ResponseAsXml</con:sourceType><con:sourceStep>JDBC Request</con:sourceStep><con:sourcePath>//ResultSet/Row[2]/CUSTOMERID.NAME</con:sourcePath><con:targetType>UserName</con:targetType><con:targetStep>UserName and Password</con:targetStep><con:targetTransferType>XPATH</con:targetTransferType><con:upgraded>true</con:upgraded></con:transfers><con:transfers setNullOnMissingSource="true" transferTextContent="true" failOnError="true" ignoreEmpty="false" transferToAll="false" entitize="false" transferChildNodes="false"><con:name>password</con:name><con:sourceType>ResponseAsXml</con:sourceType><con:sourceStep>JDBC Request</con:sourceStep><con:sourcePath>//ResultSet/Row[2]/CUSTOMERID.PASSWORD</con:sourcePath><con:targetType>password</con:targetType><con:targetStep>UserName and Password</con:targetStep><con:targetTransferType>XQUERY</con:targetTransferType><con:upgraded>true</con:upgraded></con:transfers></con:config></con:testStep><con:testStep type="properties" name="UserName and Password" id="8a3e4813-5355-4ab0-b4ea-134bea25d6de"><con:settings/><con:config xsi:type="con:PropertiesStep" saveFirst="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:properties><con:property><con:name>UserName</con:name><con:value>API</con:value></con:property><con:property><con:name>password</con:name><con:value>Welcome2</con:value></con:property></con:properties></con:config></con:testStep><con:properties/></con:testCase><con:testCase id="43cbe128-0b15-4804-8b8c-93436c635289" failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="DataBase with Script" searchProperties="true"><con:settings/><con:testStep type="groovy" name="DataBase Script" id="396096be-7c37-4bc0-bd45-56c79b0c17e4"><con:settings/><con:config><script>import groovy.sql.Sql
+
+def accessToken = "6714b04e3b1f3147101623981a573d362df4ad0d";
+
+def URL = 'jdbc:mysql://localhost:3306/Ecom'
+
+def User = 'root'
+
+def Password = 'root'
+
+def driver = 'com.mysql.jdbc.Driver'
+
+com.eviware.soapui.support.GroovyUtils.registerJdbcDriver(driver)
+
+def sql = Sql.newInstance(URL, User, Password, driver)
+
+sql.eachRow("select * from ID")
+
+{
+	row ->
+	def custId = "$row.ID";
+	log.info(custId);
+	def get = new URL("http://rest-api.upskills.in/api/rest_admin/customers/"+custId).openConnection();
+	get.setRequestProperty("Authorization","Bearer "+accessToken)
+	def getRC = get.getResponseCode();
+	log.info (" Response Code is "+getRC);
+	if (getRC.equals(200))
+	{
+		log.info(get.getInputStream().getText());
+	}
+	else
+	{
+		log.info("Something is Wrong");
+	}
+}
+sql.close()</script></con:config></con:testStep><con:properties/></con:testCase><con:properties/></con:testSuite><con:properties/><con:wssContainer/><con:oAuth2ProfileContainer/><con:oAuth1ProfileContainer/><con:sensitiveInformation/></con:soapui-project>
